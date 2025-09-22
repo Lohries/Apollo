@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import '../widgets/custom_widget.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -10,11 +8,12 @@ class HomePage extends StatefulWidget {
 }
 
 class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
-  int _selectedIndex = 0;
-  bool _isExpanded = true;
+  int _selectedIndex = 0; // Track the selected sidebar item
+  bool _isExpanded = true; // Track sidebar expanded/collapsed state
   late AnimationController _animationController;
   late Animation<double> _widthAnimation;
 
+  // List of sidebar items
   final List<Map<String, dynamic>> _sidebarItems = [
     {'title': 'Profile', 'icon': Icons.person, 'content': const ProfileContent()},
     {'title': 'Settings', 'icon': Icons.settings, 'content': const SettingsContent()},
@@ -29,10 +28,9 @@ class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin 
       vsync: this,
       duration: const Duration(milliseconds: 300),
     );
-    _widthAnimation = Tween<double>(begin: 220, end: 70).animate(
+    _widthAnimation = Tween<double>(begin: 200, end: 60).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
-    _animationController.forward();
   }
 
   @override
@@ -62,15 +60,11 @@ class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin 
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Página Inicial',
-          style: GoogleFonts.roboto(fontWeight: FontWeight.bold),
-        ),
+        title: const Text("Página Inicial"),
         actions: [
           IconButton(
             icon: Icon(_isExpanded ? Icons.arrow_back : Icons.arrow_forward),
             onPressed: _toggleSidebar,
-            tooltip: _isExpanded ? 'Collapse Sidebar' : 'Expand Sidebar',
           ),
         ],
       ),
@@ -81,80 +75,45 @@ class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin 
             builder: (context, child) {
               return Container(
                 width: _widthAnimation.value,
-                decoration: BoxDecoration(
-                  color: Colors.red[50],
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 8,
-                      offset: Offset(2, 0),
-                    ),
-                  ],
-                ),
-                child: Column(
+                color: Colors.grey[200],
+                child: ListView(
+                  padding: EdgeInsets.zero,
                   children: [
                     Container(
-                      height: 120,
-                      decoration: BoxDecoration(
-                        color: Colors.red[700],
-                        borderRadius: const BorderRadius.only(
-                          bottomRight: Radius.circular(16),
-                        ),
-                      ),
-                      child: Center(
-                        child: _isExpanded
-                            ? Text(
-                                'CRM Menu',
-                                style: GoogleFonts.roboto(
+                      height: 100,
+                      color: Colors.red,
+                      child: _isExpanded
+                          ? const Center(
+                              child: Text(
+                                'Menu',
+                                style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 24,
-                                  fontWeight: FontWeight.bold,
                                 ),
-                              )
-                            : const Icon(Icons.menu, color: Colors.white, size: 30),
-                      ),
+                              ),
+                            )
+                          : const Center(child: Icon(Icons.menu, color: Colors.white)),
                     ),
-                    Expanded(
-                      child: ListView(
-                        children: _sidebarItems.asMap().entries.map((entry) {
-                          int index = entry.key;
-                          Map<String, dynamic> item = entry.value;
-                          return ListTile(
-                            leading: Icon(
-                              item['icon'],
-                              color: _selectedIndex == index ? Colors.red[700] : Colors.red[300],
-                            ),
-                            title: _isExpanded
-                                ? Text(
-                                    item['title'],
-                                    style: GoogleFonts.roboto(
-                                      color: _selectedIndex == index ? Colors.red[700] : Colors.red[300],
-                                      fontWeight: _selectedIndex == index ? FontWeight.bold : FontWeight.normal,
-                                    ),
-                                  )
-                                : null,
-                            selected: _selectedIndex == index,
-                            selectedTileColor: Colors.red[100],
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            contentPadding: EdgeInsets.symmetric(
-                              horizontal: _isExpanded ? 16.0 : 12.0,
-                              vertical: 8.0,
-                            ),
-                            onTap: () => _onItemTapped(index),
-                          );
-                        }).toList(),
-                      ),
-                    ),
+                    ..._sidebarItems.asMap().entries.map((entry) {
+                      int index = entry.key;
+                      Map<String, dynamic> item = entry.value;
+                      return ListTile(
+                        leading: Icon(item['icon']),
+                        title: _isExpanded ? Text(item['title']) : null,
+                        selected: _selectedIndex == index,
+                        onTap: () => _onItemTapped(index),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: _isExpanded ? 16.0 : 12.0,
+                        ),
+                      );
+                    }).toList(),
                   ],
                 ),
               );
             },
           ),
           Expanded(
-            child: Container(
-              padding: const EdgeInsets.all(16.0),
+            child: Center(
               child: _sidebarItems[_selectedIndex]['content'],
             ),
           ),
@@ -164,48 +123,30 @@ class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin 
   }
 }
 
+// Widgets for each sidebar item's content
 class ProfileContent extends StatelessWidget {
   const ProfileContent({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Profile Page',
-              style: GoogleFonts.roboto(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Colors.red[700],
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Welcome to your profile!',
-              style: GoogleFonts.roboto(fontSize: 18, color: Colors.grey[800]),
-            ),
-            const SizedBox(height: 24),
-            CustomButton(
-              text: 'Edit Profile',
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Profile action triggered!', style: GoogleFonts.roboto(color: Colors.white)),
-                    backgroundColor: Colors.red[700],
-                  ),
-                );
-              },
-              color: Colors.red,
-            ),
-          ],
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Text(
+          'Profile Page',
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
-      ),
+        const SizedBox(height: 10),
+        const Text('Welcome to your profile!', style: TextStyle(fontSize: 18)),
+        ElevatedButton(
+          onPressed: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Profile action triggered!')),
+            );
+          },
+          child: const Text('Edit Profile'),
+        ),
+      ],
     );
   }
 }
@@ -215,30 +156,24 @@ class SettingsContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Settings Page',
-              style: GoogleFonts.roboto(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Colors.red[700],
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Adjust your settings here.',
-              style: GoogleFonts.roboto(fontSize: 18, color: Colors.grey[800]),
-            ),
-          ],
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Text(
+          'Settings Page',
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
-      ),
+        const SizedBox(height: 10),
+        const Text('Adjust your settings here.', style: TextStyle(fontSize: 18)),
+        ElevatedButton(
+          onPressed: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Settings action triggered!')),
+            );
+          },
+          child: const Text('Save Settings'),
+        ),
+      ],
     );
   }
 }
@@ -248,30 +183,24 @@ class DashboardContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Dashboard Page',
-              style: GoogleFonts.roboto(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Colors.red[700],
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'View your dashboard data.',
-              style: GoogleFonts.roboto(fontSize: 18, color: Colors.grey[800]),
-            ),
-          ],
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Text(
+          'Dashboard Page',
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
-      ),
+        const SizedBox(height: 10),
+        const Text('View your dashboard data.', style: TextStyle(fontSize: 18)),
+        ElevatedButton(
+          onPressed: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Dashboard refreshed!')),
+            );
+          },
+          child: const Text('Refresh Dashboard'),
+        ),
+      ],
     );
   }
 }
@@ -281,43 +210,24 @@ class OpportunitiesContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Opportunities Page',
-              style: GoogleFonts.roboto(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Colors.red[700],
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Manage your CRM opportunities here.',
-              style: GoogleFonts.roboto(fontSize: 18, color: Colors.grey[800]),
-            ),
-            const SizedBox(height: 24),
-            CustomButton(
-              text: 'View Opportunities',
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('View opportunities list!', style: GoogleFonts.roboto(color: Colors.white)),
-                    backgroundColor: Colors.red[700],
-                  ),
-                );
-              },
-              color: Colors.red,
-            ),
-          ],
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Text(
+          'Opportunities Page',
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
-      ),
+        const SizedBox(height: 10),
+        const Text('Manage your CRM opportunities here.', style: TextStyle(fontSize: 18)),
+        ElevatedButton(
+          onPressed: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Opportunities action triggered!')),
+            );
+          },
+          child: const Text('View Opportunities'),
+        ),
+      ],
     );
   }
 }
