@@ -106,7 +106,7 @@ class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin 
                           horizontal: _isExpanded ? 16.0 : 12.0,
                         ),
                       );
-                    }).toList(),
+                    }),
                   ],
                 ),
               );
