@@ -1,36 +1,32 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'pages/login_page.dart';
-import 'pages/home_page.dart';
+import 'package:provider/provider.dart';
+import 'package:apolo_project/screens/login_screen.dart';
+import 'package:apolo_project/theme/theme_provider.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => ThemeProvider(),
+      child: const ApolloApp(),
+    ),
+  );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class ApolloApp extends StatelessWidget {
+  const ApolloApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'CRM App',
-      theme: ThemeData(
-        primarySwatch: Colors.red,
-        useMaterial3: true,
-        textTheme: GoogleFonts.robotoTextTheme(
-          Theme.of(context).textTheme,
-        ),
-        scaffoldBackgroundColor: Colors.grey[100],
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.red,
-          foregroundColor: Colors.white,
-          elevation: 4,
-          shadowColor: Colors.black26,
-        ),
-      ),
-      home: const LoginPage(),
-      routes: {
-        '/home': (context) => const HomePage(),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return MaterialApp(
+          title: 'Apollo CRM',
+          debugShowCheckedModeBanner: false,
+          theme: themeProvider.lightTheme,
+          darkTheme: themeProvider.darkTheme,
+          themeMode: themeProvider.themeMode,
+          home: const LoginScreen(),
+        );
       },
     );
   }
