@@ -4,11 +4,7 @@ class ApolloLogo extends StatelessWidget {
   final double size;
   final bool withGlow;
 
-  const ApolloLogo({
-    super.key,
-    this.size = 48.0,
-    this.withGlow = true,
-  });
+  const ApolloLogo({super.key, this.size = 40, this.withGlow = true});
 
   @override
   Widget build(BuildContext context) {
@@ -18,13 +14,7 @@ class ApolloLogo extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         boxShadow: withGlow
-            ? [
-                BoxShadow(
-                  color: Colors.blue.withOpacity(0.3),
-                  blurRadius: 15,
-                  spreadRadius: 1,
-                ),
-              ]
+            ? [BoxShadow(color: Colors.blue.withOpacity(0.3), blurRadius: 12, spreadRadius: 2)]
             : null,
       ),
       child: ClipOval(
@@ -32,18 +22,11 @@ class ApolloLogo extends StatelessWidget {
           'assets/images/apollo_logo.png',
           width: size,
           height: size,
-          fit: BoxFit.contain,
-          errorBuilder: (context, error, stackTrace) => Container(
-            decoration: BoxDecoration(
-              gradient: RadialGradient(
-                colors: [Colors.blue[900]!, Colors.blue[600]!],
-              ),
-            ),
-            child: Icon(
-              Icons.home,
-              size: size * 0.5,
-              color: Colors.white,
-            ),
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => CircleAvatar(
+            radius: size / 2,
+            backgroundColor: Colors.blue[100],
+            child: Text('A', style: TextStyle(fontSize: size / 2, color: Colors.blue[800])),
           ),
         ),
       ),

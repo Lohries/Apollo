@@ -1,4 +1,7 @@
+// lib/screens/add_opportunity_screen.dart
 import 'package:flutter/material.dart';
+import 'package:apolo_project/models/opportunity.dart';
+import 'package:apolo_project/models/negotiation_step.dart'; // IMPORT NECESSÁRIO
 
 class AddOpportunityScreen extends StatefulWidget {
   const AddOpportunityScreen({super.key});
@@ -9,117 +12,106 @@ class AddOpportunityScreen extends StatefulWidget {
 
 class _AddOpportunityScreenState extends State<AddOpportunityScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _titleCtrl = TextEditingController();
-  final _valueCtrl = TextEditingController();
-  final _clientCtrl = TextEditingController();
-
-  
-  @override
-  void dispose() {
-    _titleCtrl.dispose();
-    _valueCtrl.dispose();
-    _clientCtrl.dispose();
-    super.dispose();
-  }
+  List<NegotiationStep> _steps = Opportunity.defaultTemplate();
+  int _currentStep = 0;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Nova Oportunidade'),
+        title: const Text('Criar Oportunidade'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.check),
-            onPressed: () {
-              if (_formKey.currentState!.validate()) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Oportunidade criada!')),
-                );
-                Navigator.pop(context);
-              }
-            },
+            icon: const Icon(Icons.save),
+            onPressed: _saveOpportunity,
           ),
         ],
       ),
       body: Form(
         key: _formKey,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              // CORRIGIDO: SEM const
-              TextFormField(
-                controller: _titleCtrl,
-                decoration: InputDecoration(
-                  labelText: 'Título da Oportunidade *',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12), // SEM const
-                  ),
-                  filled: true,
-                ),
-                validator: (value) => value?.isEmpty ?? true ? 'Obrigatório' : null,
+        child: Stepper(
+          currentStep: _currentStep,
+          onStepContinue: () {
+            if (_currentStep < _steps.length - 1) {
+              setState(() => _currentStep++);
+            } else {
+              _saveOpportunity();
+            }
+          },
+          onStepCancel: () {
+            if (_currentStep > 0) {
+              setState(() => _currentStep--);
+            }
+          },
+          steps: _steps.asMap().entries.map((e) {
+            final index = e.key;
+            final step = e.value;
+            return Step(
+              title: Text(step.name),
+              content: Column(
+                children: step.fields.map((field) {
+                  if (field.type == 'select') {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: DropdownButtonFormField<String>(
+                        decoration: InputDecoration(
+                          labelText: '${field.label}${field.required ? ' *' : ''}',
+                          border: const OutlineInputBorder(),
+                        ),
+                        items: field.options
+                            .map((opt) => DropdownMenuItem(value: opt, child: Text(opt)))
+                            .toList(),
+                        onChanged: (v) {},
+                        validator: field.required
+                            ? (v) => v == null ? 'Selecione uma opção' : null
+                            : null,
+                      ),
+                    );
+                  } else if (field.type == 'file') {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.attach_file),
+                        label: Text('${field.label}${field.required ? ' *' : ''}'),
+                        onPressed: () {
+                          // Futuro: abrir galeria
+                        },
+                      ),
+                    );
+                  } else {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: TextFormField(
+                        keyboardType: field.type == 'number'
+                            ? TextInputType.number
+                            : TextInputType.text,
+                        decoration: InputDecoration(
+                          labelText: '${field.label}${field.required ? ' *' : ''}',
+                          border: const OutlineInputBorder(),
+                        ),
+                        validator: field.required
+                            ? (v) => v?.isEmpty ?? true ? 'Obrigatório' : null
+                            : null,
+                      ),
+                    );
+                  }
+                }).toList(),
               ),
-              const SizedBox(height: 16),
-
-              // CORRIGIDO: SEM const
-              TextFormField(
-                controller: _clientCtrl,
-                decoration: InputDecoration(
-                  labelText: 'Cliente',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12), // SEM const
-                  ),
-                  filled: true,
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // CORRIGIDO: SEM const
-              TextFormField(
-                controller: _valueCtrl,
-                decoration: InputDecoration(
-                  labelText: 'Valor Estimado (R\$)',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12), // SEM const
-                  ),
-                  filled: true,
-                  prefixText: 'R\$ ',
-                ),
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 16),
-
-              // CORRIGIDO: SEM const
-              TextFormField(
-                decoration: InputDecoration(
-                  labelText: 'Descrição',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12), // SEM const
-                  ),
-                  filled: true,
-                ),
-                maxLines: 4,
-              ),
-              const SizedBox(height: 24),
-
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Oportunidade criada com sucesso!')),
-                      );
-                      Navigator.pop(context);
-                    }
-                  },
-                  child: const Text('Criar Oportunidade'),
-                ),
-              ),
-            ],
-          ),
+              isActive: _currentStep == index,
+              state: _currentStep > index ? StepState.complete : StepState.indexed,
+            );
+          }).toList(),
         ),
       ),
     );
+  }
+
+  void _saveOpportunity() {
+    if (_formKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Oportunidade criada com sucesso!')),
+      );
+      Navigator.pop(context);
+    }
   }
 }
